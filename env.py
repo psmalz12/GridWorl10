@@ -29,12 +29,7 @@ class Grid:
             self.board.append(row)
 
     def reset(self):
-        # choose a random location for the agent that is not the goal
-        while True:
-            new_state = (random.randint(1, ROWS - 1), random.randint(1, COLS - 1))
-            if new_state != self.goal:
-                self.state = new_state
-                break
+        self.state = (1, 1)
         return self.state
 
     def action(self, num_action):
