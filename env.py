@@ -40,75 +40,81 @@ class Grid:
             "right": 2,
             "left": 3
         }
-
-        while self.state != Goal:  # Continue looping until the goal is reached
+        while True:  # Continue looping until the goal is reached
             random_action = random.randint(0, 3)
             random_action_code = list(actions.keys())[random_action]
             print(f"-------------------------------")
             print(f"Next Move: {random_action_code:} ")
+            #visual.GridVisual.show_board(self)
             current_state = self.state
             new_state = self.agentmove(random_action)
-
-            if current_state not in self.action_state_pairs:
-                self.action_state_pairs[current_state] = {}
-            if random_action not in self.action_state_pairs[current_state]:
-                self.action_state_pairs[current_state][random_action] = []
-
-            self.action_state_pairs[current_state][random_action].append(new_state)
-
+            visual.GridVisual.show_board(self)
+            print(f"State,{current_state}, Action, {random_action}: {random_action_code} , Next State,  {new_state}")
+            # print(f"Action-state pairs: {self.action_state_pairs}")
+            self.state = new_state  # Update the state to the new state
+            print("-------------*********************************---------------")
             # Update rewards
-            reward = self.reward(current_state, random_action)
+            reward = self.reward(current_state, new_state, random_action)
             if current_state not in self.rewards:
                 self.rewards[current_state] = {}
             if random_action not in self.rewards[current_state]:
                 self.rewards[current_state][random_action] = 0
             self.rewards[current_state][random_action] += reward
 
-            visual.GridVisual.show_board(self)
-            print(f"State,{current_state}, Action, {random_action}: {random_action_code} , Next State,  {new_state}")
-            #print(f"Action-state pairs: {self.action_state_pairs}")
-            print("-------------*********************************---------------")
+            if self.state == Goal:
+                break
+
+           # if current_state not in self.action_state_pairs:
+            #    self.action_state_pairs[current_state] = {}
+            #if random_action not in self.action_state_pairs[current_state]:
+             #   self.action_state_pairs[current_state][random_action] = []
+
+            #self.action_state_pairs[current_state][random_action].append(new_state)
+
+
 
         return self.action_state_pairs, random_action
 
     def agentmove(self, direction, print_move=True):
         current_state = self.state
-        fcol, frow = self.state
-        #prev_state = self.state
+        prev_state = self.state
 
         # (0: up, 1: down, 2: right, 3: left)
-        if direction == 3:
-            fcol = self.state[0]
-            frow = self.state[1] - 1
-        elif direction == 2:
-            fcol = self.state[0]
-            frow = self.state[1] + 1
-        elif direction == 0:
+        if direction == 0:
             fcol = self.state[0] + 1
             frow = self.state[1]
         elif direction == 1:
-            fcol = self.state[0] - 1
+            fcol = self.state[0] -1
             frow = self.state[1]
+        elif direction == 2:
+            fcol = self.state[0]
+            frow = self.state[1] +1
+        elif direction == 3:
+            fcol = self.state[0]
+            frow = self.state[1] -1
+        else:
+            # invalid direction the agent stay in the same position
+            fcol = x
+            frow = y
 
             # Check if the new position is valid (not a wall and within the grid)
         if 0 <= fcol < self.ROWS and 0 <= frow < self.COLS and self.board[fcol][frow] != 1:
             # Update the state of the agent
             self.state = (fcol, frow)
             if print_move:
-                print(f'//////// agent Previous Location: {current_state}, Expected New Location : {self.state} ////////')
+                print(f'//////// agent Previous Location: {prev_state}, Expected New Location : {self.state} ////////')
         else:
             if print_move:
+                self.state = prev_state
                 print('Faced an Obstacle or a Wall')
                 print(f'//////// agent Stay at Location : {self.state} ////////')
 
         return self.state
 
-    def reward(self, current_state, action):
-        new_state = self.agentmove(action, print_move=False)
-
+    def reward(self, current_state, new_state, action):
         if new_state == current_state:  # agent stays in the same state wall or obstacles
             reward = -0.2
-        elif new_state == Goal:  # agent reach  the goal
+        elif new_state == Goal:  # agent reaches the goal
             reward = 1
         else:  # If the agent moves to a new state
             reward = -0.1
